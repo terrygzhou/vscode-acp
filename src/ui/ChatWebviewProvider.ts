@@ -423,34 +423,36 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       flex-shrink: 0;
     }
 
-    /* Token usage progress bar — wraps to second row inside banner */
-    .usage-bar {
+    /* Input area usage bar */
+    .input-usage-bar {
       display: none;
-      flex-basis: 100%;
-      min-width: 0;
-      margin-top: 4px;
-      position: relative;
-      height: 10px;
-      background: var(--vscode-inputValidation-infoBackground);
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      height: 22px;
+      font-size: 0.8em;
+      color: var(--vscode-descriptionForeground);
+    }
+    .input-usage-bar.visible { display: flex; }
+    .input-usage-label { flex-shrink: 0; }
+    .input-usage-track {
+      flex: 1;
+      height: 6px;
+      background: var(--vscode-input-border, color-mix(in srgb, var(--vscode-input-border) 30%, transparent));
       border-radius: 3px;
       overflow: hidden;
     }
-    .usage-bar.visible { display: block; }
-    .usage-bar-fill {
+    .input-usage-fill {
       height: 100%;
       background: var(--vscode-progressBar-background);
       border-radius: 3px;
       transition: width 0.3s ease;
     }
-    .usage-bar-text {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 5px;
-      font-size: 0.7em;
-      color: var(--vscode-descriptionForeground);
+    .input-usage-text {
+      flex-shrink: 0;
+      min-width: 70px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Messages area */
@@ -809,34 +811,36 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     }
     .session-banner.visible { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-    /* Token usage progress bar — wraps to second row inside banner */
-    .usage-bar {
+    /* Input area usage bar */
+    .input-usage-bar {
       display: none;
-      flex-basis: 100%;
-      min-width: 0;
-      margin-top: 4px;
-      position: relative;
-      height: 10px;
-      background: var(--vscode-inputValidation-infoBackground);
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      height: 22px;
+      font-size: 0.8em;
+      color: var(--vscode-descriptionForeground);
+    }
+    .input-usage-bar.visible { display: flex; }
+    .input-usage-label { flex-shrink: 0; }
+    .input-usage-track {
+      flex: 1;
+      height: 6px;
+      background: var(--vscode-input-border, color-mix(in srgb, var(--vscode-input-border) 30%, transparent));
       border-radius: 3px;
       overflow: hidden;
     }
-    .usage-bar.visible { display: block; }
-    .usage-bar-fill {
+    .input-usage-fill {
       height: 100%;
       background: var(--vscode-progressBar-background);
       border-radius: 3px;
       transition: width 0.3s ease;
     }
-    .usage-bar-text {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 5px;
-      font-size: 0.7em;
-      color: var(--vscode-descriptionForeground);
+    .input-usage-text {
+      flex-shrink: 0;
+      min-width: 70px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Input area states */
@@ -1190,10 +1194,6 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       <div class="agent" id="bannerAgent"></div>
       <div class="cwd" id="bannerCwd"></div>
     </div>
-    <div class="usage-bar" id="usageBar">
-      <div class="usage-bar-fill" id="usageBarFill"></div>
-      <span class="usage-bar-text" id="usageBarText"></span>
-    </div>
     <span class="status" id="status"></span>
   </div>
 
@@ -1240,6 +1240,13 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         <div class="picker-dropdown" id="modelDropdown"></div>
       </div>
       <span class="toolbar-spacer"></span>
+    </div>
+    <div class="input-usage-bar" id="usageBar">
+      <span class="input-usage-label">🧠</span>
+      <div class="input-usage-track">
+        <div class="input-usage-fill" id="usageBarFill"></div>
+      </div>
+      <span class="input-usage-text" id="usageBarText"></span>
     </div>
     <div class="input-editor-wrap">
       <textarea
