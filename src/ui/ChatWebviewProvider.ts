@@ -143,6 +143,9 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         updatedAt: updateData.updatedAt,
       });
     }
+    if (updateData?.sessionUpdate === 'usage_update') {
+      this.sessionManager.applyUsage(update.sessionId, updateData);
+    }
 
     // Only forward to the webview if this is the active session — the
     // webview only ever shows one session at a time.
