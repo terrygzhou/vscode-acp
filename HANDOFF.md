@@ -1,9 +1,9 @@
-# Session Handoff — 2026-07-26 09:00 UTC
+# Session Handoff — 2026-07-26 10:00 UTC
 
 **Project**: `vscode-acp` | `/home/terry/workspace/projects/vscode-acp`
 **Branch**: `main`
-**Last commit**: `abb4013 auto: handoff`
-**Uncommitted**: 1 files: `M package-lock.json`
+**Last commit**: `b402398 auto: handoff`
+**Uncommitted**: 4 files: `M package-lock.json`, `M src/core/SessionManager.ts`, `?? AGENTS.md`, `?? plan/`
 
 ## Recent Goals
 - [Terry Zhou] introduce ACP and MCP in AI context
