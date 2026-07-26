@@ -1,8 +1,8 @@
-# Session Handoff — 2026-07-26 11:00 UTC
+# Session Handoff — 2026-07-26 11:30 UTC
 
 **Project**: `vscode-acp` | `/home/terry/workspace/projects/vscode-acp`
 **Branch**: `main`
-**Last commit**: `1fa4b79 feat: show context usage (used/size tokens) in status bar`
+**Last commit**: `8cb501e feat: add token usage progress bar to webview session banner`
 
 ## Recent Goals
 - [Terry Zhou] introduce ACP and MCP in AI context
