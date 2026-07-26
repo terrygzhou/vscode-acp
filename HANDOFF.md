@@ -1,16 +1,53 @@
-# Session Handoff — 2026-07-26 11:30 UTC
+# Handoff — vscode-acp
 
-**Project**: `vscode-acp` | `/home/terry/workspace/projects/vscode-acp`
-**Branch**: `main`
-**Last commit**: `8cb501e feat: add token usage progress bar to webview session banner`
+**Branch**: `main` → `origin/main` (5 ahead)
+**Last commit**: `723523a fix: webview usage bar layout — flex-wrap + margin for second-row display`
 
-## Recent Goals
-- [Terry Zhou] introduce ACP and MCP in AI context
+## Current State
 
-## Recent Actions
-- The user is asking me to introduce ACP (Agent Communication Protocol) and MCP (Model Context Protocol) in the AI context
-- The search tools aren't available. Let me check the skills list for relevant skills and use what I know. Let me load the
-- **MCP (Model Context Protocol)** — Anthropic, 2024  The standard for **LLM-to-tool** communication. An MCP server expose
+| Feature | Status | Commit |
+|---|---|---|
+| Status bar usage (`45K/200K`) | ✅ Verified in VS Code | `1fa4b79` |
+| Webview progress bar | ✅ Fixed layout, installed | `8cb501e` + `723523a` |
 
-## Context
-Session: `20260616_132003_5c76a01a.jsonl` | Turns: 1
+## Architecture (usage feature)
+
+```
+Agent → session/update { sessionUpdate: "usage_update", used, size }
+  → AcpClientImpl.sessionUpdate()
+    → SessionUpdateHandler.handleUpdate()
+      → ChatWebviewProvider.handleSessionUpdate()
+        → SessionManager.applyUsage()         ← stores session.usage
+        → postMessage({ type: 'sessionUpdate' }) → webview handleUpdate() → updateUsageBar()
+      → SessionManager.emit('session-usage-changed') → StatusBarManager
+```
+
+## File Map (relevant to recent changes)
+
+| File | Lines | Role |
+|---|---|---|
+| `src/core/SessionManager.ts` | ~1020 | `applyUsage()`, `pendingUsages` buffer, `usage` on SessionInfo |
+| `src/ui/ChatWebviewProvider.ts` | ~2665 | HTML banner (L1188), CSS themes (L427 + L812), webview JS (L1284+), message switch (L2231) |
+| `src/ui/StatusBarManager.ts` | ~60 | `formatTokens()`, status bar text with usage suffix |
+| `src/handlers/SessionUpdateHandler.ts` | ~38 | Routes `session/update` to listeners |
+
+## SDK Types
+
+- `UsageUpdate` from `@agentclientprotocol/sdk` v0.21.1: `{ used: number, size: number }`
+- `SessionUpdate` union includes `UsageUpdate & { sessionUpdate: "usage_update" }`
+
+## Conventions
+
+- Single file: `ChatWebviewProvider.ts` contains HTML template + CSS + embedded webview JS
+- Two CSS theme blocks (light/dark) — changes must be applied to both
+- Webview JS message dispatch: top-level `window.addEventListener('message')` switch → `handleUpdate()` inner switch on `update.sessionUpdate`
+- `var(--vscode-*)` CSS custom properties only — never hardcode colors
+- Verify: `npm run compile` then `npm run lint`
+
+## Build / Install
+
+```bash
+vsce package          # → acp-client-0.2.0.vsix
+code --install-extension acp-client-0.2.0.vsix
+# Then reload window in VS Code
+```
