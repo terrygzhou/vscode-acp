@@ -289,6 +289,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         models: session.models,
         configOptions: session.configOptions,
         availableCommands: session.availableCommands,
+        usage: session.usage,
       } : null,
     });
   }
@@ -420,6 +421,35 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       font-size: 0.85em;
       opacity: 0.7;
       flex-shrink: 0;
+    }
+
+    /* Token usage progress bar inside session banner */
+    .usage-bar {
+      display: none;
+      flex: 1;
+      align-items: center;
+      position: relative;
+      height: 12px;
+      background: var(--vscode-inputValidation-infoBackground);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .usage-bar.visible { display: flex; }
+    .usage-bar-fill {
+      height: 100%;
+      background: var(--vscode-progressBar-background);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .usage-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 4px;
+      font-size: 0.7em;
+      color: var(--vscode-descriptionForeground);
     }
 
     /* Messages area */
@@ -778,6 +808,35 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     }
     .session-banner.visible { display: flex; align-items: center; gap: 8px; }
 
+    /* Token usage progress bar inside session banner */
+    .usage-bar {
+      display: none;
+      flex: 1;
+      align-items: center;
+      position: relative;
+      height: 12px;
+      background: var(--vscode-inputValidation-infoBackground);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .usage-bar.visible { display: flex; }
+    .usage-bar-fill {
+      height: 100%;
+      background: var(--vscode-progressBar-background);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .usage-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 4px;
+      font-size: 0.7em;
+      color: var(--vscode-descriptionForeground);
+    }
+
     /* Input area states */
     .input-area.disabled .input-toolbar,
     .input-area.disabled .input-editor-wrap,
@@ -1129,6 +1188,10 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       <div class="agent" id="bannerAgent"></div>
       <div class="cwd" id="bannerCwd"></div>
     </div>
+    <div class="usage-bar" id="usageBar">
+      <div class="usage-bar-fill" id="usageBarFill"></div>
+      <span class="usage-bar-text" id="usageBarText"></span>
+    </div>
     <span class="status" id="status"></span>
   </div>
 
@@ -1221,9 +1284,13 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     const modelPickerLabel = document.getElementById('modelPickerLabel');
     const modelDropdown = document.getElementById('modelDropdown');
     const configOptionsContainer = document.getElementById('configOptionsContainer');
+    const usageBar = document.getElementById('usageBar');
+    const usageBarFill = document.getElementById('usageBarFill');
+    const usageBarText = document.getElementById('usageBarText');
 
     let hasActiveSession = false;
     let isProcessing = false;
+    let lastUsage = null;  // { used: number, size: number }
 
     // Modes / models state (legacy fallback path)
     let availableModes = [];
@@ -1255,6 +1322,25 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       if (!promptInput.value.startsWith('/')) {
         promptInput.placeholder = savedPlaceholder;
       }
+    }
+
+    // --- Token usage bar ---
+    function formatTokens(n) {
+      if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+      if (n >= 1_000) return Math.round(n / 1_000) + 'K';
+      return String(n);
+    }
+
+    function updateUsageBar(usage) {
+      if (!usageBar || !usageBarFill || !usageBarText) return;
+      if (!usage || !usage.size) {
+        usageBar.classList.remove('visible');
+        return;
+      }
+      usageBar.classList.add('visible');
+      const pct = Math.min(100, (usage.used / usage.size) * 100);
+      usageBarFill.style.width = pct + '%';
+      usageBarText.textContent = formatTokens(usage.used) + '/' + formatTokens(usage.size);
     }
 
     // --- State persistence ---
@@ -2202,6 +2288,12 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         availableCommands = session.availableCommands;
       }
       updatePlaceholder();
+
+      // Restore usage bar
+      if (session.usage) {
+        lastUsage = session.usage;
+        updateUsageBar(lastUsage);
+      }
     }
 
     function showSessionConnectedFromState(ss) {
@@ -2217,8 +2309,10 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     function showNoSession() {
       hasActiveSession = false;
       sessionState = null;
+      lastUsage = null;
       saveState();
       if (sessionBanner) sessionBanner.classList.remove('visible');
+      if (usageBar) usageBar.classList.remove('visible');
       if (emptyState) emptyState.style.display = '';
       if (inputArea) inputArea.classList.add('disabled');
       // Hide pickers when disconnected
@@ -2315,11 +2409,13 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
           thoughtStartTime = null;
           thoughtEndTime = null;
           availableCommands = [];
+          lastUsage = null;
           slashPopup.classList.remove('open');
           messagesEl.innerHTML = '';
           messagesEl.appendChild(emptyState);
           if (emptyState) emptyState.style.display = '';
           if (sessionBanner) sessionBanner.classList.remove('visible');
+          if (usageBar) usageBar.classList.remove('visible');
           if (inputArea) inputArea.classList.add('disabled');
           modePickerWrap.classList.add('hidden');
           modelPickerWrap.classList.add('hidden');
@@ -2519,6 +2615,11 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         case 'available_commands_update':
           availableCommands = update.availableCommands || [];
           updatePlaceholder();
+          break;
+
+        case 'usage_update':
+          lastUsage = { used: update.used, size: update.size };
+          updateUsageBar(lastUsage);
           break;
       }
     }
