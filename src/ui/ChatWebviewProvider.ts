@@ -402,7 +402,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       border-bottom: 1px solid var(--vscode-panel-border);
       font-size: 0.9em;
     }
-    .session-banner.visible { display: flex; align-items: center; gap: 8px; }
+    .session-banner.visible { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .session-banner .dot {
       width: 8px;
       height: 8px;
@@ -423,18 +423,19 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       flex-shrink: 0;
     }
 
-    /* Token usage progress bar inside session banner */
+    /* Token usage progress bar — wraps to second row inside banner */
     .usage-bar {
       display: none;
-      flex: 1;
-      align-items: center;
+      flex-basis: 100%;
+      min-width: 0;
+      margin-top: 4px;
       position: relative;
-      height: 12px;
+      height: 10px;
       background: var(--vscode-inputValidation-infoBackground);
       border-radius: 3px;
       overflow: hidden;
     }
-    .usage-bar.visible { display: flex; }
+    .usage-bar.visible { display: block; }
     .usage-bar-fill {
       height: 100%;
       background: var(--vscode-progressBar-background);
@@ -447,7 +448,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding-right: 4px;
+      padding-right: 5px;
       font-size: 0.7em;
       color: var(--vscode-descriptionForeground);
     }
@@ -806,20 +807,21 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       border-bottom: 1px solid var(--vscode-panel-border);
       font-size: 0.9em;
     }
-    .session-banner.visible { display: flex; align-items: center; gap: 8px; }
+    .session-banner.visible { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-    /* Token usage progress bar inside session banner */
+    /* Token usage progress bar — wraps to second row inside banner */
     .usage-bar {
       display: none;
-      flex: 1;
-      align-items: center;
+      flex-basis: 100%;
+      min-width: 0;
+      margin-top: 4px;
       position: relative;
-      height: 12px;
+      height: 10px;
       background: var(--vscode-inputValidation-infoBackground);
       border-radius: 3px;
       overflow: hidden;
     }
-    .usage-bar.visible { display: flex; }
+    .usage-bar.visible { display: block; }
     .usage-bar-fill {
       height: 100%;
       background: var(--vscode-progressBar-background);
@@ -832,7 +834,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding-right: 4px;
+      padding-right: 5px;
       font-size: 0.7em;
       color: var(--vscode-descriptionForeground);
     }
