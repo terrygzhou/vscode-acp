@@ -1357,7 +1357,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     let sessionState = null;
 
     function saveState() {
-      vscode.setState({ chatHistory, sessionState, hasActiveSession, lastUsage });
+      vscode.setState({ chatHistory, sessionState, hasActiveSession });
     }
 
     function restoreState() {
@@ -1367,13 +1367,16 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       chatHistory = saved.chatHistory || [];
       sessionState = saved.sessionState || null;
       hasActiveSession = saved.hasActiveSession || false;
-      if (saved.lastUsage) {
-        lastUsage = saved.lastUsage;
-        updateUsageBar(lastUsage);
-      }
 
       if (hasActiveSession && sessionState) {
         showSessionConnectedFromState(sessionState);
+      }
+
+      // Only restore usage bar when there is an active session —
+      // otherwise we show stale counts from a previous disconnected session.
+      if (hasActiveSession && sessionState?.usage) {
+        lastUsage = sessionState.usage;
+        updateUsageBar(lastUsage);
       }
 
       const assistantItems = [];
