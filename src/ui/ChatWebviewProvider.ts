@@ -438,7 +438,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     .input-usage-track {
       flex: 1;
       height: 6px;
-      background: var(--vscode-input-border, color-mix(in srgb, var(--vscode-input-border) 30%, transparent));
+      background: color-mix(in srgb, var(--vscode-input-border, #808080) 30%, transparent);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -826,7 +826,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     .input-usage-track {
       flex: 1;
       height: 6px;
-      background: var(--vscode-input-border, color-mix(in srgb, var(--vscode-input-border) 30%, transparent));
+      background: color-mix(in srgb, var(--vscode-input-border, #808080) 30%, transparent);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -1357,7 +1357,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     let sessionState = null;
 
     function saveState() {
-      vscode.setState({ chatHistory, sessionState, hasActiveSession });
+      vscode.setState({ chatHistory, sessionState, hasActiveSession, lastUsage });
     }
 
     function restoreState() {
@@ -1367,6 +1367,10 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       chatHistory = saved.chatHistory || [];
       sessionState = saved.sessionState || null;
       hasActiveSession = saved.hasActiveSession || false;
+      if (saved.lastUsage) {
+        lastUsage = saved.lastUsage;
+        updateUsageBar(lastUsage);
+      }
 
       if (hasActiveSession && sessionState) {
         showSessionConnectedFromState(sessionState);
@@ -2298,11 +2302,9 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
       }
       updatePlaceholder();
 
-      // Restore usage bar
-      if (session.usage) {
-        lastUsage = session.usage;
-        updateUsageBar(lastUsage);
-      }
+      // Restore usage bar — always reset on session switch to avoid showing stale values
+      lastUsage = session.usage || null;
+      updateUsageBar(lastUsage);
     }
 
     function showSessionConnectedFromState(ss) {

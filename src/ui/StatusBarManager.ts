@@ -41,7 +41,7 @@ export class StatusBarManager {
       this.statusBarItem.backgroundColor = undefined;
     } else {
       const agentName = activeSession?.agentDisplayName || connectedAgents[0];
-      const usageSuffix = activeSession?.usage ? `  ${formatTokens(activeSession.usage.used)}/${formatTokens(activeSession.usage.size)}` : '';
+      const usageSuffix = activeSession?.usage?.size && activeSession.usage.size > 0 ? `  ${formatTokens(activeSession.usage.used)}/${formatTokens(activeSession.usage.size)}` : '';
       this.statusBarItem.text = `$(hubot) ACP: ${agentName}${usageSuffix}`;
       this.statusBarItem.tooltip = `Connected to ${agentName}\n${connectedAgents.length} agent(s) connected`;
       this.statusBarItem.backgroundColor = undefined;
