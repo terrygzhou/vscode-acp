@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
 import { SessionManager } from '../core/SessionManager';
-
-/** Format token count with K/M suffix. */
-function formatTokens(n: number): string {
-  if (n >= 1_000_000) { return (n / 1_000_000).toFixed(1) + 'M'; }
-  if (n >= 1_000) { return (n / 1_000).toFixed(0) + 'K'; }
-  return String(n);
-}
+import { computeUsageSuffix } from '../util/usage';
 
 /**
  * Manages the status bar item showing ACP connection status.
@@ -41,7 +35,7 @@ export class StatusBarManager {
       this.statusBarItem.backgroundColor = undefined;
     } else {
       const agentName = activeSession?.agentDisplayName || connectedAgents[0];
-      const usageSuffix = activeSession?.usage?.size && activeSession.usage.size > 0 ? `  ${formatTokens(activeSession.usage.used)}/${formatTokens(activeSession.usage.size)}` : '';
+      const usageSuffix = computeUsageSuffix(activeSession?.usage);
       this.statusBarItem.text = `$(hubot) ACP: ${agentName}${usageSuffix}`;
       this.statusBarItem.tooltip = `Connected to ${agentName}\n${connectedAgents.length} agent(s) connected`;
       this.statusBarItem.backgroundColor = undefined;

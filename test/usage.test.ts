@@ -1,32 +1,17 @@
 import { describe, it } from 'mocha';
 import { strictEqual } from 'assert';
+import { formatTokens, computeUsageSuffix } from '../src/util/usage';
 
-/** Replicate StatusBarManager.formatTokens for unit testing. */
-function formatTokens(n: number): string {
-  if (n >= 1_000_000) { return (n / 1_000_000).toFixed(1) + 'M'; }
-  if (n >= 1_000) { return (n / 1_000).toFixed(0) + 'K'; }
-  return String(n);
-}
-
-/** Replicate the webview JS formatTokens variant (uses Math.round). */
+/** Replicate the webview JS formatTokens variant (uses Math.round).
+ * Lives in inline webview HTML — can't import directly. */
 function formatTokensWebview(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return Math.round(n / 1_000) + 'K';
   return String(n);
 }
 
-/** Replicate the status bar usage guard logic. */
-function computeUsageSuffix(
-  usage: { used: number; size: number } | null | undefined,
-): string {
-  if (usage?.size && usage.size > 0) {
-    return `  ${formatTokens(usage.used)}/${formatTokens(usage.size)}`;
-  }
-  return '';
-}
-
 /** Replicate the restoreState() usage bar logic from ChatWebviewProvider.
- * Only restores usage bar when hasActiveSession && sessionState?.usage. */
+ * Lives in inline webview HTML — can't import directly. */
 interface RestoreStateResult {
   barRestored: boolean;
   usage: { used: number; size: number } | null;
@@ -104,8 +89,8 @@ describe('Usage display', () => {
     });
 
     it('returns empty string when size is missing', () => {
-      // @ts-expect-error — testing shape mismatch
-      strictEqual(computeUsageSuffix({ used: 45_000 }), '');
+      // Runtime guard: usage?.size is undefined → falsy → empty string
+      strictEqual(computeUsageSuffix({ used: 45_000 } as any), '');
     });
   });
 
