@@ -1372,13 +1372,6 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         showSessionConnectedFromState(sessionState);
       }
 
-      // Only restore usage bar when there is an active session —
-      // otherwise we show stale counts from a previous disconnected session.
-      if (hasActiveSession && sessionState?.usage) {
-        lastUsage = sessionState.usage;
-        updateUsageBar(lastUsage);
-      }
-
       const assistantItems = [];
       for (let i = 0; i < chatHistory.length; i++) {
         const item = chatHistory[i];
